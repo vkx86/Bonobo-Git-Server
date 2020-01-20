@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Web.Mvc;
 using Bonobo.Git.Server.Configuration;
@@ -57,19 +58,19 @@ namespace Bonobo.Git.Server.Controllers
                 }
             }
 
-            
             var requiredLevel = isPush ? RepositoryAccessLevel.Push : RepositoryAccessLevel.Pull;
             if (RepositoryPermissionService.HasPermission(User.Id(), repositoryName, requiredLevel))
             {
                 return GetInfoRefs(repositoryName, service);
             }
-
-            Log.Warning("GitC: SecureGetInfoRefs unauth because User {UserId} doesn't have permission {Permission} on  repo {RepositoryName}", 
-                User.Id(),
-                requiredLevel,
-                repositoryName);
-
-            return UnauthorizedResult();
+            else
+            {
+                Log.Warning("GitC: SecureGetInfoRefs unauth because User {UserId} doesn't have permission {Permission} on  repo {RepositoryName}", 
+                    User.Id(),
+                    requiredLevel,
+                    repositoryName);
+                return UnauthorizedResult();
+            }
         }
 
         [HttpPost]
@@ -84,8 +85,10 @@ namespace Bonobo.Git.Server.Controllers
             {
                 return ExecuteUploadPack(repositoryName);
             }
-
-            return UnauthorizedResult();
+            else
+            {
+                return UnauthorizedResult();
+            }
         }
 
         [HttpPost]
